@@ -1,0 +1,108 @@
+package model
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/zalhonan/remotejobs-site/internal/domain/entity"
+)
+
+// JobViewModel модель представления для вакансии в списке
+type JobViewModel struct {
+	ID             int64     // ID вакансии
+	Title          string    // Заголовок вакансии
+	Content        string    // Содержимое вакансии
+	SourceLink     string    // Ссылка на источник вакансии
+	MainTechnology string    // Основная технология
+	DatePosted     time.Time // Дата публикации
+	DatePostedStr  string    // Форматированная дата публикации
+	Slug           string    // Часть URL для вакансии
+	URL            string    // Полный URL вакансии
+}
+
+// JobDetailViewModel модель представления для детальной страницы вакансии
+type JobDetailViewModel struct {
+	JobViewModel                // Встраиваем базовую модель
+	RelatedJobs  []JobViewModel // Связанные вакансии
+}
+
+// JobListViewModel модель представления для списка вакансий
+type JobListViewModel struct {
+	Jobs         []JobViewModel        // Список вакансий
+	Technologies []TechnologyViewModel // Список технологий
+	CurrentPage  int                   // Текущая страница
+	TotalPages   int                   // Общее количество страниц
+	Technology   string                // Текущая технология (если фильтр по технологии)
+	IsFiltered   bool                  // Флаг, указывающий на наличие фильтра
+	PrevPage     int                   // Предыдущая страница
+	NextPage     int                   // Следующая страница
+	PageTitle    string                // Заголовок страницы
+	BaseURL      string                // Базовый URL для пагинации
+}
+
+// NewJobViewModelFromEntity создает модель представления из доменной сущности
+func NewJobViewModelFromEntity(job entity.JobRaw, slug string) JobViewModel {
+	// Форматируем дату для отображения
+	datePostedStr := job.DatePosted.Format("02.01.2006")
+
+	// Определяем заголовок из контента (в реальном приложении здесь была бы более сложная логика)
+	title := "Вакансия по " + job.MainTechnology
+	if len(job.Content) > 50 {
+		title = job.Content[:50] + "..."
+	}
+
+	// Формируем URL вакансии
+	url := fmt.Sprintf("/job/%d-%s", job.ID, slug)
+
+	return JobViewModel{
+		ID:             job.ID,
+		Title:          title,
+		Content:        job.Content,
+		SourceLink:     job.SourceLink,
+		MainTechnology: job.MainTechnology,
+		DatePosted:     job.DatePosted,
+		DatePostedStr:  datePostedStr,
+		Slug:           slug,
+		URL:            url,
+	}
+}
+
+// NewJobListViewModel создает модель представления списка вакансий
+func NewJobListViewModel(
+	jobs []JobViewModel,
+	technologies []TechnologyViewModel,
+	currentPage, totalPages int,
+	technology string,
+) JobListViewModel {
+	isFiltered := technology != ""
+	prevPage := currentPage - 1
+	if prevPage < 1 {
+		prevPage = 1
+	}
+
+	nextPage := currentPage + 1
+	if nextPage > totalPages {
+		nextPage = totalPages
+	}
+
+	baseURL := "/"
+	pageTitle := "Все вакансии"
+
+	if isFiltered {
+		baseURL = "/" + technology + "/"
+		pageTitle = "Вакансии по " + technology
+	}
+
+	return JobListViewModel{
+		Jobs:         jobs,
+		Technologies: technologies,
+		CurrentPage:  currentPage,
+		TotalPages:   totalPages,
+		Technology:   technology,
+		IsFiltered:   isFiltered,
+		PrevPage:     prevPage,
+		NextPage:     nextPage,
+		PageTitle:    pageTitle,
+		BaseURL:      baseURL,
+	}
+}

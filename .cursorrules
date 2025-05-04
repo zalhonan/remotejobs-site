@@ -1,0 +1,5 @@
+
+We are creating a web site collecting remote vacancies in IT.
+We already have database with vacancies from different sources. Another service will add new vacancies to the database.
+When writing code, be sure that it will work correctly and that you are not breaking anything that exists.
+Use context7 when generating code to use the latest versions of libraries, frameworks and tools.

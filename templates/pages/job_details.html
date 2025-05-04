@@ -1,0 +1,60 @@
+{{define "content"}}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Главная</a></li>
+                <li class="breadcrumb-item"><a href="/{{.MainTechnology}}">{{.MainTechnology}}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{.Title}}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h1 class="card-title h2">{{.Title}}</h1>
+                <h6 class="card-subtitle mb-3 text-muted">
+                    <span class="badge bg-primary me-2">{{.MainTechnology}}</span>
+                    <span>Опубликовано: {{.DatePostedStr}}</span>
+                </h6>
+
+                <div class="card-text mb-4">
+                    <pre class="job-content">{{.Content}}</pre>
+                </div>
+
+                <a href="{{.SourceLink}}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                    Перейти к оригиналу вакансии
+                </a>
+                <a href="/" class="btn btn-outline-secondary ms-2">
+                    Вернуться к списку вакансий
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        {{if .RelatedJobs}}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Похожие вакансии</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {{range .RelatedJobs}}
+                    <a href="{{.URL}}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{.Title}}</h6>
+                        </div>
+                        <small class="text-muted">{{.DatePostedStr}}</small>
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}
