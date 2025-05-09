@@ -3,6 +3,8 @@
 CREATE TABLE IF NOT EXISTS jobs_raw (
     id BIGSERIAL PRIMARY KEY,
     content TEXT NOT NULL,
+    title TEXT,
+    content_pure TEXT,
     source_link VARCHAR(2048) NOT NULL,
     main_technology VARCHAR(255),
     date_posted TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -31,6 +33,13 @@ CREATE TABLE IF NOT EXISTS technologies (
 
 CREATE INDEX IF NOT EXISTS idx_technologies_technology ON technologies(technology);
 CREATE INDEX IF NOT EXISTS idx_technologies_keywords ON technologies USING GIN (keywords);
+
+CREATE TABLE IF NOT EXISTS stop_words (
+    id BIGSERIAL PRIMARY KEY,
+    word VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE INDEX IF NOT EXISTS idx_stop_words_word ON stop_words(word);
 -- +goose StatementEnd
 
 -- +goose Down
@@ -38,4 +47,5 @@ CREATE INDEX IF NOT EXISTS idx_technologies_keywords ON technologies USING GIN (
 DROP TABLE IF EXISTS technologies;
 DROP TABLE IF EXISTS telegram_channels;
 DROP TABLE IF EXISTS jobs_raw;
+DROP TABLE IF EXISTS stop_words;
 -- +goose StatementEnd
