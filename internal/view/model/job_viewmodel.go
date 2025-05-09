@@ -22,8 +22,10 @@ type JobViewModel struct {
 
 // JobDetailViewModel модель представления для детальной страницы вакансии
 type JobDetailViewModel struct {
-	JobViewModel                // Встраиваем базовую модель
-	RelatedJobs  []JobViewModel // Связанные вакансии
+	JobViewModel                       // Встраиваем базовую модель
+	RelatedJobs  []JobViewModel        // Связанные вакансии
+	PageTitle    string                // Заголовок страницы
+	Technologies []TechnologyViewModel // Список технологий для меню
 }
 
 // JobListViewModel модель представления для списка вакансий
@@ -45,10 +47,11 @@ func NewJobViewModelFromEntity(job entity.JobRaw, slug string) JobViewModel {
 	// Форматируем дату для отображения
 	datePostedStr := job.DatePosted.Format("02.01.2006")
 
-	// Определяем заголовок из контента (в реальном приложении здесь была бы более сложная логика)
-	title := "Вакансия по " + job.MainTechnology
-	if len(job.Content) > 50 {
-		title = job.Content[:50] + "..."
+	// Используем поле Title из JobRaw
+	title := job.Title
+	// Если title не задан, формируем его из main_technology
+	if title == "" {
+		title = "Вакансия по " + job.MainTechnology
 	}
 
 	// Формируем URL вакансии

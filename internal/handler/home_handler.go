@@ -125,7 +125,7 @@ func (h *HomeHandler) renderJobsList(w http.ResponseWriter, r *http.Request, tec
 		// Преобразуем в view-модели
 		jobs = make([]model.JobViewModel, 0, len(jobsRaw))
 		for _, job := range jobsRaw {
-			slug := h.jobService.GenerateSlug(job.Content)
+			slug := h.jobService.GenerateSlug(job.Title)
 			jobViewModel := model.NewJobViewModelFromEntity(job, slug)
 			jobs = append(jobs, jobViewModel)
 		}
@@ -146,7 +146,7 @@ func (h *HomeHandler) renderJobsList(w http.ResponseWriter, r *http.Request, tec
 		// Преобразуем в view-модели
 		jobs = make([]model.JobViewModel, 0, len(jobsRaw))
 		for _, job := range jobsRaw {
-			slug := h.jobService.GenerateSlug(job.Content)
+			slug := h.jobService.GenerateSlug(job.Title)
 			jobViewModel := model.NewJobViewModelFromEntity(job, slug)
 			jobs = append(jobs, jobViewModel)
 		}
@@ -160,12 +160,19 @@ func (h *HomeHandler) renderJobsList(w http.ResponseWriter, r *http.Request, tec
 		h.logger.Error("Ошибка при рендеринге шаблона home.html",
 			zap.Error(err),
 		)
-		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		// Если заголовок еще не был отправлен, устанавливаем код ошибки
+		if w.Header().Get("Content-Type") == "" {
+			http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		} else {
+			// Иначе просто пишем сообщение в тело ответа
+			w.Write([]byte("Внутренняя ошибка сервера"))
+		}
 	}
 }
 
 // renderError отображает страницу с ошибкой
 func (h *HomeHandler) renderError(w http.ResponseWriter, statusCode int, title, message string) {
+	// Устанавливаем статус код только один раз
 	w.WriteHeader(statusCode)
 
 	viewModel := map[string]interface{}{
@@ -179,6 +186,8 @@ func (h *HomeHandler) renderError(w http.ResponseWriter, statusCode int, title, 
 		h.logger.Error("Ошибка при рендеринге шаблона error.html",
 			zap.Error(err),
 		)
-		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		// Не вызываем http.Error(), так как это вызовет повторную запись заголовка
+		// Просто пишем сообщение об ошибке в тело ответа
+		w.Write([]byte("Внутренняя ошибка сервера"))
 	}
 }

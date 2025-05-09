@@ -25,7 +25,7 @@ func NewJobRepository(db *pgxpool.Pool, logger *zap.Logger) *JobRepository {
 // GetLatest возвращает последние вакансии с пагинацией
 func (r *JobRepository) GetLatest(ctx context.Context, limit, offset int) ([]entity.JobRaw, error) {
 	query := `
-		SELECT id, content, source_link, main_technology, date_posted, date_parsed
+		SELECT id, content, title, source_link, main_technology, date_posted, date_parsed
 		FROM jobs_raw
 		ORDER BY date_posted DESC
 		LIMIT $1 OFFSET $2
@@ -43,6 +43,7 @@ func (r *JobRepository) GetLatest(ctx context.Context, limit, offset int) ([]ent
 		if err := rows.Scan(
 			&job.ID,
 			&job.Content,
+			&job.Title,
 			&job.SourceLink,
 			&job.MainTechnology,
 			&job.DatePosted,
@@ -63,7 +64,7 @@ func (r *JobRepository) GetLatest(ctx context.Context, limit, offset int) ([]ent
 // GetByTechnology возвращает вакансии по конкретной технологии с пагинацией
 func (r *JobRepository) GetByTechnology(ctx context.Context, technology string, limit, offset int) ([]entity.JobRaw, error) {
 	query := `
-		SELECT id, content, source_link, main_technology, date_posted, date_parsed
+		SELECT id, content, title, source_link, main_technology, date_posted, date_parsed
 		FROM jobs_raw
 		WHERE main_technology = $1
 		ORDER BY date_posted DESC
@@ -82,6 +83,7 @@ func (r *JobRepository) GetByTechnology(ctx context.Context, technology string, 
 		if err := rows.Scan(
 			&job.ID,
 			&job.Content,
+			&job.Title,
 			&job.SourceLink,
 			&job.MainTechnology,
 			&job.DatePosted,
@@ -102,7 +104,7 @@ func (r *JobRepository) GetByTechnology(ctx context.Context, technology string, 
 // GetByID возвращает вакансию по её ID
 func (r *JobRepository) GetByID(ctx context.Context, id int64) (entity.JobRaw, error) {
 	query := `
-		SELECT id, content, source_link, main_technology, date_posted, date_parsed
+		SELECT id, content, title, source_link, main_technology, date_posted, date_parsed
 		FROM jobs_raw
 		WHERE id = $1
 	`
@@ -111,6 +113,7 @@ func (r *JobRepository) GetByID(ctx context.Context, id int64) (entity.JobRaw, e
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&job.ID,
 		&job.Content,
+		&job.Title,
 		&job.SourceLink,
 		&job.MainTechnology,
 		&job.DatePosted,

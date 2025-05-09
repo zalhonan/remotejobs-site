@@ -67,7 +67,7 @@ func (h *JobHandler) Details(w http.ResponseWriter, r *http.Request, urlPath str
 	}
 
 	// Генерируем slug для этой вакансии
-	slug := h.jobService.GenerateSlug(job.Content)
+	slug := h.jobService.GenerateSlug(job.Title)
 
 	// Преобразуем в view-модель
 	jobViewModel := model.NewJobViewModelFromEntity(job, slug)
@@ -76,24 +76,52 @@ func (h *JobHandler) Details(w http.ResponseWriter, r *http.Request, urlPath str
 	// Для простоты используем пустой массив
 	relatedJobs := []model.JobViewModel{}
 
+	// Получаем список всех технологий для меню
+	technologies, err := h.technologyService.GetAll(ctx)
+	if err != nil {
+		h.logger.Error("Ошибка при получении списка технологий",
+			zap.Error(err),
+		)
+		h.renderError(w, http.StatusInternalServerError, "Ошибка сервера", "Не удалось загрузить список технологий")
+		return
+	}
+
+	// Преобразуем в view-модели для шаблона
+	techViewModels := make([]model.TechnologyViewModel, 0, len(technologies))
+	for _, tech := range technologies {
+		// В реальном приложении здесь был бы запрос количества вакансий для технологии
+		// Для простоты используем заглушки
+		jobsCount := 0
+		techViewModel := model.NewTechnologyViewModelFromEntity(tech, jobsCount)
+		techViewModels = append(techViewModels, techViewModel)
+	}
+
 	// Формируем модель представления для детальной страницы вакансии
 	viewModel := model.JobDetailViewModel{
 		JobViewModel: jobViewModel,
 		RelatedJobs:  relatedJobs,
+		PageTitle:    jobViewModel.Title, // Используем заголовок вакансии в качестве заголовка страницы
+		Technologies: techViewModels,     // Добавляем список технологий для меню
 	}
 
-	// Добавляем заголовок страницы
 	// Отображаем страницу
 	if err := h.templates.Render(w, "pages/job_details.html", viewModel); err != nil {
 		h.logger.Error("Ошибка при рендеринге шаблона job_details.html",
 			zap.Error(err),
 		)
-		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		// Если заголовок еще не был отправлен, устанавливаем код ошибки
+		if w.Header().Get("Content-Type") == "" {
+			http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		} else {
+			// Иначе просто пишем сообщение в тело ответа
+			w.Write([]byte("Внутренняя ошибка сервера"))
+		}
 	}
 }
 
 // renderError отображает страницу с ошибкой
 func (h *JobHandler) renderError(w http.ResponseWriter, statusCode int, title, message string) {
+	// Устанавливаем статус код только один раз
 	w.WriteHeader(statusCode)
 
 	viewModel := map[string]interface{}{
@@ -107,6 +135,8 @@ func (h *JobHandler) renderError(w http.ResponseWriter, statusCode int, title, m
 		h.logger.Error("Ошибка при рендеринге шаблона error.html",
 			zap.Error(err),
 		)
-		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		// Не вызываем http.Error(), так как это вызовет повторную запись заголовка
+		// Просто пишем сообщение об ошибке в тело ответа
+		w.Write([]byte("Внутренняя ошибка сервера"))
 	}
 }
