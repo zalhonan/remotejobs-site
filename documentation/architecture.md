@@ -11,7 +11,7 @@
 - **Миграции**: Goose
 - **Логирование**: Zap + BetterStack
 - **Конфигурация**: Godotenv
-- **Веб-фреймворк**: [например, Gin/Echo/Fiber/стандартный net/http]
+- **Веб-фреймворк**: Chi (github.com/go-chi/chi)
 - **Шаблонизатор**: Go HTML Templates (html/template)
 - **CSS-фреймворк**: Bootstrap
 - **JavaScript**: Минимальный JS для интерактивности на стороне клиента
@@ -34,7 +34,8 @@ remote-jobs/
 │   ├── handler/             # HTTP обработчики с серверным рендерингом
 │   ├── logger/              # Настройка и инициализация логирования
 │   ├── middleware/          # Промежуточные обработчики (middleware)
-│   ├── router/              # Настройка маршрутизации
+│   ├── router/              # Настройка маршрутизации на основе Chi
+│   │   └── routes.go        # Определение маршрутов для Chi
 │   ├── util/                # Вспомогательные функции и утилиты
 │   └── view/                # Логика представления
 │       ├── helper/          # Хелперы для шаблонов
@@ -89,13 +90,39 @@ remote-jobs/
 
 ### 3. Маршрутизация
 
-Приложение поддерживает следующие основные маршруты:
+Приложение использует роутер Chi, который обеспечивает идиоматичный подход к определению маршрутов и middleware в Go. Основные маршруты:
 
 - **/** - Главная страница со списком вакансий и технологий
 - **/{page}** - Пагинация списка вакансий (например, /2, /3)
 - **/{technology}** - Список вакансий по конкретной технологии
 - **/{technology}/{page}** - Пагинация списка вакансий по конкретной технологии (например, /2, /3)
 - **/job/{id}-{slug}** - Страница конкретной вакансии. Slug формируется из названия вакансии латиницей
+
+Пример настройки маршрутов с Chi:
+
+```go
+func NewRouter(handlers *handlers.Handlers) *chi.Mux {
+    r := chi.NewRouter()
+    
+    // Middleware
+    r.Use(middleware.Logger)
+    r.Use(middleware.Recoverer)
+    r.Use(middleware.Compress(5))
+    
+    // Статические файлы
+    fileServer := http.FileServer(http.Dir("static"))
+    r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
+    
+    // Маршруты
+    r.Get("/", handlers.HomeHandler.Index)
+    r.Get("/{page}", handlers.HomeHandler.Index)
+    r.Get("/{technology}", handlers.JobsHandler.ByTechnology)
+    r.Get("/{technology}/{page}", handlers.JobsHandler.ByTechnology)
+    r.Get("/job/{jobID}-{slug}", handlers.JobsHandler.Details)
+    
+    return r
+}
+```
 
 ### 4. HTML-шаблоны и Bootstrap
 
@@ -208,23 +235,23 @@ type JobViewModel struct {
 ### 1. Отображение списка вакансий (Главная страница)
 
 ```
-GET / -> Router -> HomeHandler.Index -> VacancyService.GetLatest -> VacancyRepository.GetLatest -> БД
-                                      -> TechnologyService.GetAll -> TechnologyRepository.GetAll -> БД
-                                      -> Рендеринг "home.html" -> HTML -> Клиент
+GET / -> Chi Router -> HomeHandler.Index -> VacancyService.GetLatest -> VacancyRepository.GetLatest -> БД
+                                          -> TechnologyService.GetAll -> TechnologyRepository.GetAll -> БД
+                                          -> Рендеринг "home.html" -> HTML -> Клиент
 ```
 
 ### 2. Отображение вакансий по технологии
 
 ```
-GET /{technology} -> Router -> JobsHandler.ByTechnology -> VacancyService.GetByTechnology -> VacancyRepository.GetByTechnology -> БД
-                                                         -> Рендеринг "jobs_list.html" -> HTML -> Клиент
+GET /{technology} -> Chi Router -> JobsHandler.ByTechnology -> VacancyService.GetByTechnology -> VacancyRepository.GetByTechnology -> БД
+                                                             -> Рендеринг "jobs_list.html" -> HTML -> Клиент
 ```
 
 ### 3. Отображение конкретной вакансии
 
 ```
-GET /job/{id}-{slug} -> Router -> JobsHandler.Details -> VacancyService.GetByID -> VacancyRepository.GetByID -> БД
-                                                       -> Рендеринг "job_details.html" -> HTML -> Клиент
+GET /job/{id}-{slug} -> Chi Router -> JobsHandler.Details -> VacancyService.GetByID -> VacancyRepository.GetByID -> БД
+                                                           -> Рендеринг "job_details.html" -> HTML -> Клиент
 ```
 
 ## Производительность и оптимизация

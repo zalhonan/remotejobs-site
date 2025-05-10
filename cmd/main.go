@@ -60,9 +60,6 @@ func main() {
 	// Создаем маршрутизатор
 	appRouter := router.NewRouter(homeHandler, jobHandler, appLogger)
 
-	// Создаем middleware для логирования запросов
-	loggerMiddleware := middleware.NewLogger(appLogger)
-
 	// Создаем middleware для заголовков безопасности
 	// Устанавливаем useHTTPS в false, так как пока мы не используем HTTPS
 	// Если сайт будет работать через HTTPS, нужно будет изменить на true
@@ -71,8 +68,8 @@ func main() {
 	// Настройка HTTP-сервера
 	server := &http.Server{
 		Addr: ":8090", // Можно загружать из конфигурации
-		// Применяем middleware по порядку: security -> logger -> router
-		Handler:      securityMiddleware.Middleware(loggerMiddleware.Middleware(appRouter)),
+		// Применяем security middleware поверх роутера
+		Handler:      securityMiddleware.Middleware(appRouter),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,

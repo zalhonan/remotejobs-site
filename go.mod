@@ -3,6 +3,7 @@ module github.com/zalhonan/remotejobs-site
 go 1.24.2
 
 require (
+	github.com/go-chi/chi/v5 v5.2.1
 	github.com/microcosm-cc/bluemonday v1.0.27
 	go.uber.org/zap v1.27.0
 )
