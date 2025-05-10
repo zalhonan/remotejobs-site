@@ -20,7 +20,7 @@
             <div class="card-body">
                 <h5 class="card-title"><a href="{{.URL}}" class="text-decoration-none">{{.Title}}</a></h5>
                 <h6 class="card-subtitle mb-2 text-muted">{{.MainTechnology}} | {{.DatePostedStr}}</h6>
-                <p class="card-text">{{truncate .Content 450}}</p>
+                <p class="card-text">{{prepareContentPreview .Content 5}}</p>
                 <a href="{{.URL}}" class="btn btn-primary btn-sm">Подробнее</a>
                 <a href="{{.SourceLink}}" class="btn btn-outline-secondary btn-sm" target="_blank"
                     rel="noopener noreferrer">Источник</a>

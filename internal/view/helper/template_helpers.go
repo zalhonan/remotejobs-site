@@ -10,15 +10,16 @@ import (
 // TemplateFuncs возвращает карту функций для использования в шаблонах
 func TemplateFuncs() template.FuncMap {
 	return template.FuncMap{
-		"truncate":     truncate,
-		"formatDate":   formatDate,
-		"safeHTML":     safeHTML,
-		"iterate":      iterate,
-		"add":          add,
-		"subtract":     subtract,
-		"escapeJS":     escapeJS,
-		"formatNumber": formatNumber,
-		"split":        strings.Split,
+		"truncate":              truncate,
+		"formatDate":            formatDate,
+		"safeHTML":              safeHTML,
+		"iterate":               iterate,
+		"add":                   add,
+		"subtract":              subtract,
+		"escapeJS":              escapeJS,
+		"formatNumber":          formatNumber,
+		"split":                 strings.Split,
+		"prepareContentPreview": prepareContentPreview,
 	}
 }
 
@@ -87,4 +88,41 @@ func escapeJS(s string) string {
 // formatNumber форматирует число с разделителями
 func formatNumber(n int) string {
 	return fmt.Sprintf("%d", n)
+}
+
+// prepareContentPreview подготавливает превью контента для отображения
+// Удаляет пустые строки, но сохраняет абзацы и списки
+// Возвращает первые n абзацев контента или все, если их меньше
+func prepareContentPreview(content string, paragraphs int) template.HTML {
+	if content == "" {
+		return ""
+	}
+
+	// Разбиваем на строки
+	lines := strings.Split(content, "\n")
+
+	// Удаляем пустые строки, сохраняя структуру абзацев
+	var nonEmptyLines []string
+	for _, line := range lines {
+		trimmedLine := strings.TrimSpace(line)
+		if trimmedLine != "" {
+			nonEmptyLines = append(nonEmptyLines, line)
+		}
+	}
+
+	// Определяем, сколько строк взять
+	maxLines := paragraphs
+	if len(nonEmptyLines) < maxLines {
+		maxLines = len(nonEmptyLines)
+	}
+
+	// Берем первые maxLines строк
+	result := strings.Join(nonEmptyLines[:maxLines], "<br>")
+
+	// Если есть еще строки, добавляем многоточие
+	if len(nonEmptyLines) > maxLines {
+		result += "..."
+	}
+
+	return template.HTML(result)
 }
