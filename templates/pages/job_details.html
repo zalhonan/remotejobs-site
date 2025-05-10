@@ -21,9 +21,7 @@
                     <span>Опубликовано: {{.DatePostedStr}}</span>
                 </h6>
 
-                <div class="card-text mb-4">
-                    <pre class="job-content">{{.Content}}</pre>
-                </div>
+                <div class="card-text mb-4 job-content">{{safeHTML .Content}}</div>
 
                 <a href="{{.SourceLink}}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                     Перейти к оригиналу вакансии

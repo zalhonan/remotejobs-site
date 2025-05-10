@@ -3,8 +3,11 @@ package helper
 import (
 	"fmt"
 	"html/template"
+	"regexp"
 	"strings"
 	"time"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 // TemplateFuncs возвращает карту функций для использования в шаблонах
@@ -44,8 +47,35 @@ func formatDate(t time.Time) string {
 }
 
 // safeHTML помечает строку как безопасный HTML
+// Очищает HTML от потенциально опасных элементов и атрибутов (JavaScript)
 func safeHTML(s string) template.HTML {
-	return template.HTML(s)
+	// Используем UGCPolicy из bluemonday - политику для пользовательского контента
+	p := bluemonday.UGCPolicy()
+
+	// Разрешаем базовые элементы форматирования текста и таблицы
+	p.AllowElements("p", "br", "strong", "em", "u", "s", "ul", "ol", "li",
+		"blockquote", "code", "pre", "h1", "h2", "h3", "h4", "h5", "h6",
+		"table", "thead", "tbody", "tr", "td", "th")
+
+	// Разрешаем ссылки, но только для безопасных протоколов
+	p.AllowAttrs("href").OnElements("a")
+	p.AllowURLSchemes("http", "https", "mailto")
+
+	// Очищаем HTML
+	sanitized := p.Sanitize(s)
+
+	// Удаляем только лишние пробелы в начале каждой строки, но сохраняем пустые строки
+	re := regexp.MustCompile(`(?m)^[\t ]+`)
+	sanitized = re.ReplaceAllString(sanitized, "")
+
+	// Удаляем пробелы в начале и конце всего текста
+	sanitized = strings.TrimSpace(sanitized)
+
+	// Заменяем последовательности из более чем 3-х переносов строк на 2 переноса
+	re = regexp.MustCompile(`\n{3,}`)
+	sanitized = re.ReplaceAllString(sanitized, "\n\n")
+
+	return template.HTML(sanitized)
 }
 
 // iterate создает слайс целых чисел от start до end (включительно)

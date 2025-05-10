@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/zalhonan/remotejobs-site/internal/domain/entity"
@@ -11,7 +12,8 @@ import (
 type JobViewModel struct {
 	ID             int64     // ID вакансии
 	Title          string    // Заголовок вакансии
-	Content        string    // Содержимое вакансии
+	Content        string    // HTML содержимое вакансии для полной страницы
+	ContentPreview string    // Текстовое содержимое вакансии для превью
 	SourceLink     string    // Ссылка на источник вакансии
 	MainTechnology string    // Основная технология
 	DatePosted     time.Time // Дата публикации
@@ -57,10 +59,14 @@ func NewJobViewModelFromEntity(job entity.JobRaw, slug string) JobViewModel {
 	// Формируем URL вакансии
 	url := fmt.Sprintf("/job/%d-%s", job.ID, slug)
 
+	// Очищаем HTML-контент от лишних пробелов в начале
+	content := strings.TrimLeft(job.Content, " \t\n\r")
+
 	return JobViewModel{
 		ID:             job.ID,
 		Title:          title,
-		Content:        job.ContentPure,
+		Content:        content,         // HTML содержимое для полной страницы
+		ContentPreview: job.ContentPure, // Текстовое содержимое для превью
 		SourceLink:     job.SourceLink,
 		MainTechnology: job.MainTechnology,
 		DatePosted:     job.DatePosted,
