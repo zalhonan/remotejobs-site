@@ -91,19 +91,18 @@ func formatNumber(n int) string {
 }
 
 // prepareContentPreview подготавливает превью контента для отображения
-// Удаляет пустые строки, но сохраняет абзацы и списки
-// Возвращает первые n абзацев контента или все, если их меньше
-func prepareContentPreview(content string, paragraphs int) template.HTML {
+// Возвращает первые n строк контента, но не более 700 символов
+func prepareContentPreview(content string, lines int) template.HTML {
 	if content == "" {
 		return ""
 	}
 
 	// Разбиваем на строки
-	lines := strings.Split(content, "\n")
+	contentLines := strings.Split(content, "\n")
 
 	// Удаляем пустые строки, сохраняя структуру абзацев
 	var nonEmptyLines []string
-	for _, line := range lines {
+	for _, line := range contentLines {
 		trimmedLine := strings.TrimSpace(line)
 		if trimmedLine != "" {
 			nonEmptyLines = append(nonEmptyLines, line)
@@ -111,7 +110,7 @@ func prepareContentPreview(content string, paragraphs int) template.HTML {
 	}
 
 	// Определяем, сколько строк взять
-	maxLines := paragraphs
+	maxLines := lines
 	if len(nonEmptyLines) < maxLines {
 		maxLines = len(nonEmptyLines)
 	}
@@ -119,8 +118,17 @@ func prepareContentPreview(content string, paragraphs int) template.HTML {
 	// Берем первые maxLines строк
 	result := strings.Join(nonEmptyLines[:maxLines], "<br>")
 
-	// Если есть еще строки, добавляем многоточие
-	if len(nonEmptyLines) > maxLines {
+	// Если превью превышает 700 символов, обрезаем
+	if len(result) > 700 {
+		// Ищем последний пробел перед 700 символом для красивого обрезания
+		lastSpace := strings.LastIndex(result[:700], " ")
+		if lastSpace > 0 {
+			result = result[:lastSpace] + "..."
+		} else {
+			result = result[:700] + "..."
+		}
+	} else if len(nonEmptyLines) > maxLines {
+		// Если есть еще строки, добавляем многоточие
 		result += "..."
 	}
 
