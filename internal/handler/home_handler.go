@@ -173,10 +173,11 @@ func (h *HomeHandler) renderError(w http.ResponseWriter, statusCode int, title, 
 	w.WriteHeader(statusCode)
 
 	viewModel := map[string]interface{}{
-		"StatusCode": statusCode,
-		"Title":      title,
-		"Message":    message,
-		"PageTitle":  "Ошибка",
+		"StatusCode":      statusCode,
+		"Title":           title,
+		"Message":         message,
+		"PageTitle":       "Ошибка",
+		"MetaDescription": "Ошибка на сайте удаленных вакансий в IT. " + message,
 	}
 
 	if err := h.templates.Render(w, "errors/error.html", viewModel); err != nil {
