@@ -95,7 +95,7 @@ func NewJobListViewModel(
 	}
 
 	baseURL := "/"
-	pageTitle := "Все вакансии"
+	pageTitle := "Вакансии, удалённая работа в IT"
 
 	if isFiltered {
 		baseURL = "/" + technology + "/"

@@ -57,6 +57,28 @@ main {
     font-weight: normal;
 }
 
+#technologies {
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+#technologies .list-group {
+    border-radius: 0;
+}
+
+#technologies .list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+#technologies .list-group-item:first-child {
+    border-top: none;
+}
+
+#technologies .list-group-item:last-child {
+    border-bottom: none;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .card-title {
