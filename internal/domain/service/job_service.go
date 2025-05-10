@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"regexp"
 	"strings"
 
+	"github.com/mozillazg/go-slugify"
 	"github.com/zalhonan/remotejobs-site/internal/db/repository"
 	"github.com/zalhonan/remotejobs-site/internal/domain/entity"
 	"go.uber.org/zap"
@@ -130,18 +130,22 @@ func (s *JobService) GetByID(ctx context.Context, id int64) (entity.JobRaw, erro
 
 // GenerateSlug генерирует slug из заголовка вакансии
 func (s *JobService) GenerateSlug(title string) string {
-	// Транслитерация кириллицы в латиницу могла бы быть здесь,
-	// но для простоты просто заменяем все неалфавитно-цифровые символы на дефис
-	reg := regexp.MustCompile(`[^a-zA-Z0-9]+`)
-	slug := reg.ReplaceAllString(strings.ToLower(title), "-")
+	// Используем библиотеку slugify для транслитерации кириллицы
+	// и очистки от нежелательных символов
+	slug := slugify.Slugify(title)
 
-	// Убираем начальные и конечные дефисы
-	slug = strings.Trim(slug, "-")
-
-	// Если slug пустой, возвращаем fallback
+	// Если после очистки slug пустой, возвращаем fallback
 	if slug == "" {
 		return "job"
 	}
+
+	// Ограничиваем длину slug до 50 символов, чтобы избежать слишком длинных URL
+	if len(slug) > 50 {
+		slug = slug[:50]
+	}
+
+	// Убираем возможные дефисы в конце слага после обрезки
+	slug = strings.Trim(slug, "-")
 
 	return slug
 }
