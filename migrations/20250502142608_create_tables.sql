@@ -7,12 +7,14 @@ CREATE TABLE IF NOT EXISTS jobs_raw (
     content_pure TEXT,
     source_link VARCHAR(2048) NOT NULL,
     main_technology VARCHAR(255),
+    slug VARCHAR(255) NOT NULL UNIQUE,
     stop_words TEXT[],
     date_posted TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     date_parsed TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_jobs_raw_main_technology ON jobs_raw(main_technology);
+CREATE INDEX IF NOT EXISTS idx_jobs_raw_slug ON jobs_raw(slug);
 
 CREATE TABLE IF NOT EXISTS telegram_channels (
     id BIGSERIAL PRIMARY KEY,

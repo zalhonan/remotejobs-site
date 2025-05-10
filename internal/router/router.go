@@ -46,7 +46,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Страница вакансии
-	if match, _ := regexp.MatchString(`^/job/\d+-`, path); match {
+	if match, _ := regexp.MatchString(`^/job/\d+`, path); match {
 		r.jobHandler.Details(w, req, path)
 		return
 	}

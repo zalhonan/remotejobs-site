@@ -93,8 +93,14 @@ func NewJobViewModelFromEntity(job entity.JobRaw, slug string) JobViewModel {
 		title = "Вакансия по " + job.MainTechnology
 	}
 
-	// Формируем URL вакансии
-	url := fmt.Sprintf("/job/%d-%s", job.ID, slug)
+	// Проверяем, не пустой ли slug
+	if slug == "" {
+		// Формируем простой fallback slug - просто числовой ID
+		slug = fmt.Sprintf("%d", job.ID)
+	}
+
+	// Формируем URL вакансии, используя только слаг из базы данных
+	url := fmt.Sprintf("/job/%s", slug)
 
 	// Очищаем HTML-контент от лишних пробелов в начале
 	content := strings.TrimLeft(job.Content, " \t\n\r")

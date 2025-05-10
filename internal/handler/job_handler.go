@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/zalhonan/remotejobs-site/internal/domain/service"
 	"github.com/zalhonan/remotejobs-site/internal/view/model"
@@ -34,24 +35,41 @@ func NewJobHandler(
 
 // Details обрабатывает запрос на страницу конкретной вакансии
 func (h *JobHandler) Details(w http.ResponseWriter, r *http.Request, urlPath string) {
-	// Регулярное выражение для извлечения ID из URL вида /job/12345-job-title
-	re := regexp.MustCompile(`^/job/(\d+)-(.+)$`)
+	// Регулярное выражение для извлечения слага из URL вида /job/slug
+	re := regexp.MustCompile(`^/job/(.+)$`)
 	matches := re.FindStringSubmatch(urlPath)
 
-	if len(matches) != 3 {
+	if len(matches) != 2 {
 		h.renderError(w, http.StatusNotFound, "Вакансия не найдена", "Запрошенная вакансия не существует или URL некорректен")
 		return
 	}
 
-	// Извлекаем ID вакансии из URL
-	jobID, err := strconv.ParseInt(matches[1], 10, 64)
+	// Извлекаем слаг из URL
+	slug := matches[1]
+
+	var jobID int64
+	var err error
+
+	// Проверяем, может ли слаг быть просто числом (ID)
+	jobID, err = strconv.ParseInt(slug, 10, 64)
 	if err != nil {
-		h.logger.Error("Ошибка при преобразовании ID вакансии",
-			zap.Error(err),
-			zap.String("jobIdStr", matches[1]),
-		)
-		h.renderError(w, http.StatusBadRequest, "Неверный ID вакансии", "Указанный ID вакансии некорректен")
-		return
+		// Если слаг не является просто числом, пытаемся извлечь ID из него
+		// предполагая формат: ID-остальная-часть-слага
+		idParts := strings.Split(slug, "-")
+		if len(idParts) == 0 {
+			h.renderError(w, http.StatusNotFound, "Вакансия не найдена", "Некорректный формат URL")
+			return
+		}
+
+		jobID, err = strconv.ParseInt(idParts[0], 10, 64)
+		if err != nil {
+			h.logger.Error("Ошибка при преобразовании ID вакансии из слага",
+				zap.Error(err),
+				zap.String("slug", slug),
+			)
+			h.renderError(w, http.StatusBadRequest, "Неверный формат URL", "URL вакансии некорректен")
+			return
+		}
 	}
 
 	// Получаем вакансию по ID
@@ -66,11 +84,8 @@ func (h *JobHandler) Details(w http.ResponseWriter, r *http.Request, urlPath str
 		return
 	}
 
-	// Генерируем slug для этой вакансии
-	slug := h.jobService.GenerateSlug(job.Title)
-
 	// Преобразуем в view-модель
-	jobViewModel := model.NewJobViewModelFromEntity(job, slug)
+	jobViewModel := model.NewJobViewModelFromEntity(job, job.Slug)
 
 	// Получаем похожие вакансии (например, с той же технологией)
 	// Для простоты используем пустой массив

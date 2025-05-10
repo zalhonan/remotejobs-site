@@ -122,8 +122,7 @@ func (h *HomeHandler) renderJobsList(w http.ResponseWriter, r *http.Request, tec
 		// Преобразуем в view-модели
 		jobs = make([]model.JobViewModel, 0, len(jobsRaw))
 		for _, job := range jobsRaw {
-			slug := h.jobService.GenerateSlug(job.Title)
-			jobViewModel := model.NewJobViewModelFromEntity(job, slug)
+			jobViewModel := model.NewJobViewModelFromEntity(job, job.Slug)
 			jobs = append(jobs, jobViewModel)
 		}
 	} else {
@@ -143,8 +142,7 @@ func (h *HomeHandler) renderJobsList(w http.ResponseWriter, r *http.Request, tec
 		// Преобразуем в view-модели
 		jobs = make([]model.JobViewModel, 0, len(jobsRaw))
 		for _, job := range jobsRaw {
-			slug := h.jobService.GenerateSlug(job.Title)
-			jobViewModel := model.NewJobViewModelFromEntity(job, slug)
+			jobViewModel := model.NewJobViewModelFromEntity(job, job.Slug)
 			jobs = append(jobs, jobViewModel)
 		}
 	}
