@@ -27,6 +27,7 @@ func (r *JobRepository) GetLatest(ctx context.Context, limit, offset int) ([]ent
 	query := `
 		SELECT id, content, title, source_link, main_technology, content_pure, date_posted, date_parsed
 		FROM jobs_raw
+		WHERE main_technology IS NOT NULL AND main_technology != ''
 		ORDER BY date_posted DESC
 		LIMIT $1 OFFSET $2
 	`
@@ -108,7 +109,7 @@ func (r *JobRepository) GetByID(ctx context.Context, id int64) (entity.JobRaw, e
 	query := `
 		SELECT id, content, title, source_link, main_technology, content_pure, date_posted, date_parsed
 		FROM jobs_raw
-		WHERE id = $1
+		WHERE id = $1 AND main_technology IS NOT NULL AND main_technology != ''
 	`
 
 	var job entity.JobRaw
@@ -131,7 +132,7 @@ func (r *JobRepository) GetByID(ctx context.Context, id int64) (entity.JobRaw, e
 
 // GetTotalCount возвращает общее количество вакансий
 func (r *JobRepository) GetTotalCount(ctx context.Context) (int, error) {
-	query := "SELECT COUNT(*) FROM jobs_raw"
+	query := "SELECT COUNT(*) FROM jobs_raw WHERE main_technology IS NOT NULL AND main_technology != ''"
 
 	var count int
 	err := r.db.QueryRow(ctx, query).Scan(&count)
