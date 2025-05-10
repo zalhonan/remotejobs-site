@@ -89,10 +89,7 @@ func (h *JobHandler) Details(w http.ResponseWriter, r *http.Request, urlPath str
 	// Преобразуем в view-модели для шаблона
 	techViewModels := make([]model.TechnologyViewModel, 0, len(technologies))
 	for _, tech := range technologies {
-		// В реальном приложении здесь был бы запрос количества вакансий для технологии
-		// Для простоты используем заглушки
-		jobsCount := 0
-		techViewModel := model.NewTechnologyViewModelFromEntity(tech, jobsCount)
+		techViewModel := model.NewTechnologyViewModelFromEntity(tech)
 		techViewModels = append(techViewModels, techViewModel)
 	}
 

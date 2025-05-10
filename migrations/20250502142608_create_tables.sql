@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS jobs_raw (
     content_pure TEXT,
     source_link VARCHAR(2048) NOT NULL,
     main_technology VARCHAR(255),
+    stop_words TEXT[],
     date_posted TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     date_parsed TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -28,7 +29,8 @@ CREATE TABLE IF NOT EXISTS technologies (
     id BIGSERIAL PRIMARY KEY,
     technology VARCHAR(100) NOT NULL UNIQUE,
     keywords TEXT[] NOT NULL,
-    sort_order INTEGER NOT NULL DEFAULT 0 CHECK (sort_order BETWEEN -100 AND 100)
+    sort_order INTEGER NOT NULL DEFAULT 0 CHECK (sort_order BETWEEN -100 AND 100),
+    count BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_technologies_technology ON technologies(technology);

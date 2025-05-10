@@ -25,8 +25,9 @@ func NewTechnologyRepository(db *pgxpool.Pool, logger *zap.Logger) *TechnologyRe
 // GetAll возвращает все технологии, отсортированные по порядку сортировки
 func (r *TechnologyRepository) GetAll(ctx context.Context) ([]entity.Technology, error) {
 	query := `
-		SELECT id, technology, keywords, sort_order
+		SELECT id, technology, keywords, sort_order, count
 		FROM technologies
+		WHERE count > 0
 		ORDER BY sort_order DESC, technology ASC
 	`
 
@@ -44,6 +45,7 @@ func (r *TechnologyRepository) GetAll(ctx context.Context) ([]entity.Technology,
 			&tech.Technology,
 			&tech.Keywords,
 			&tech.SortOrder,
+			&tech.Count,
 		); err != nil {
 			return nil, fmt.Errorf("не удалось обработать строку технологии: %w", err)
 		}
@@ -60,7 +62,7 @@ func (r *TechnologyRepository) GetAll(ctx context.Context) ([]entity.Technology,
 // GetByName возвращает технологию по её имени
 func (r *TechnologyRepository) GetByName(ctx context.Context, name string) (entity.Technology, error) {
 	query := `
-		SELECT id, technology, keywords, sort_order
+		SELECT id, technology, keywords, sort_order, count
 		FROM technologies
 		WHERE technology = $1
 	`
@@ -71,6 +73,7 @@ func (r *TechnologyRepository) GetByName(ctx context.Context, name string) (enti
 		&tech.Technology,
 		&tech.Keywords,
 		&tech.SortOrder,
+		&tech.Count,
 	)
 	if err != nil {
 		return entity.Technology{}, fmt.Errorf("не удалось получить технологию с именем=%s: %w", name, err)

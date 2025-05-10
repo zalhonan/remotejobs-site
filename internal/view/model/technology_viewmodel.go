@@ -11,11 +11,11 @@ type TechnologyViewModel struct {
 	Keywords  []string // Ключевые слова
 	SortOrder int      // Порядок сортировки
 	URL       string   // URL для фильтрации вакансий по технологии
-	JobsCount int      // Количество доступных вакансий
+	JobsCount int64    // Количество доступных вакансий
 }
 
 // NewTechnologyViewModelFromEntity создает модель представления из доменной сущности
-func NewTechnologyViewModelFromEntity(tech entity.Technology, jobsCount int) TechnologyViewModel {
+func NewTechnologyViewModelFromEntity(tech entity.Technology) TechnologyViewModel {
 	// Формируем URL для фильтрации
 	url := "/" + tech.Technology
 
@@ -25,6 +25,6 @@ func NewTechnologyViewModelFromEntity(tech entity.Technology, jobsCount int) Tec
 		Keywords:  tech.Keywords,
 		SortOrder: tech.SortOrder,
 		URL:       url,
-		JobsCount: jobsCount,
+		JobsCount: tech.Count,
 	}
 }

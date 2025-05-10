@@ -5,4 +5,5 @@ type Technology struct {
 	Technology string
 	Keywords   []string
 	SortOrder  int
+	Count      int64
 }
