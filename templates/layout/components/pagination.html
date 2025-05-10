@@ -2,6 +2,7 @@
 {{if gt .TotalPages 1}}
 <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center">
+        {{/* Кнопка "Предыдущая" */}}
         {{if gt .CurrentPage 1}}
         <li class="page-item">
             <a class="page-link" href="{{.BaseURL}}{{if gt .PrevPage 1}}{{.PrevPage}}{{end}}" aria-label="Previous">
@@ -14,12 +15,67 @@
         </li>
         {{end}}
 
+        {{/* Логика отображения страниц */}}
+        {{if le .TotalPages 7}}
+        {{/* Если страниц не больше 7, показываем все */}}
         {{range $i := iterate 1 .TotalPages}}
         <li class="page-item {{if eq $i $.CurrentPage}}active{{end}}">
             <a class="page-link" href="{{$.BaseURL}}{{if ne $i 1}}{{$i}}{{end}}">{{$i}}</a>
         </li>
         {{end}}
+        {{else}}
+        {{/* Для большого количества страниц показываем интеллектуально */}}
+        {{/* Всегда показываем первую страницу */}}
+        <li class="page-item {{if eq 1 $.CurrentPage}}active{{end}}">
+            <a class="page-link" href="{{$.BaseURL}}">1</a>
+        </li>
 
+        {{/* Определяем диапазон страниц для отображения */}}
+        {{$startPage := 0}}
+        {{$endPage := 0}}
+
+        {{if le .CurrentPage 4}}
+        {{/* Находимся ближе к началу */}}
+        {{$startPage = 2}}
+        {{$endPage = 5}}
+        {{else if ge .CurrentPage (subtract .TotalPages 3)}}
+        {{/* Находимся ближе к концу */}}
+        {{$startPage = (subtract .TotalPages 4)}}
+        {{$endPage = (subtract .TotalPages 1)}}
+        {{else}}
+        {{/* Находимся где-то в середине */}}
+        {{$startPage = (subtract .CurrentPage 1)}}
+        {{$endPage = (add .CurrentPage 1)}}
+        {{end}}
+
+        {{/* Показываем многоточие перед диапазоном, если нужно */}}
+        {{if gt $startPage 2}}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {{end}}
+
+        {{/* Показываем страницы из нашего диапазона */}}
+        {{range $i := iterate $startPage $endPage}}
+        <li class="page-item {{if eq $i $.CurrentPage}}active{{end}}">
+            <a class="page-link" href="{{$.BaseURL}}{{if ne $i 1}}{{$i}}{{end}}">{{$i}}</a>
+        </li>
+        {{end}}
+
+        {{/* Показываем многоточие после диапазона, если нужно */}}
+        {{if lt $endPage (subtract .TotalPages 1)}}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {{end}}
+
+        {{/* Всегда показываем последнюю страницу */}}
+        <li class="page-item {{if eq .TotalPages $.CurrentPage}}active{{end}}">
+            <a class="page-link" href="{{$.BaseURL}}{{.TotalPages}}">{{.TotalPages}}</a>
+        </li>
+        {{end}}
+
+        {{/* Кнопка "Следующая" */}}
         {{if lt .CurrentPage .TotalPages}}
         <li class="page-item">
             <a class="page-link" href="{{.BaseURL}}{{.NextPage}}" aria-label="Next">
