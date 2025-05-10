@@ -18,6 +18,7 @@ func TemplateFuncs() template.FuncMap {
 		"subtract":     subtract,
 		"escapeJS":     escapeJS,
 		"formatNumber": formatNumber,
+		"split":        strings.Split,
 	}
 }
 

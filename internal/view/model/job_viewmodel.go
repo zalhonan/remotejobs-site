@@ -60,7 +60,7 @@ func NewJobViewModelFromEntity(job entity.JobRaw, slug string) JobViewModel {
 	return JobViewModel{
 		ID:             job.ID,
 		Title:          title,
-		Content:        job.Content,
+		Content:        job.ContentPure,
 		SourceLink:     job.SourceLink,
 		MainTechnology: job.MainTechnology,
 		DatePosted:     job.DatePosted,

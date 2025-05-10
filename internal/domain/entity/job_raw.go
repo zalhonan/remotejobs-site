@@ -8,6 +8,7 @@ type JobRaw struct {
 	Title          string
 	SourceLink     string
 	MainTechnology string
+	ContentPure    string
 	DatePosted     time.Time
 	DateParsed     time.Time
 }
